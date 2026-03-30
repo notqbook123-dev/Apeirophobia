@@ -58,3 +58,17 @@ async def upload_file(password: str, file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     return {"status": "success", "filename": file.filename}
+
+
+@router.delete("/files/{filename}")
+def delete_file(filename: str, password: str = None):
+    if password != SECRET_PASSWORD:
+        return {"error": "unauthorized"}
+    
+    file_path = os.path.join(STORAGE_PATH, filename)
+
+    if not os.path.exists(file_path):
+        return {"error": "file not found"}
+    
+    os.remove(file_path)
+    return {"status": "deleted", "filename": filename}

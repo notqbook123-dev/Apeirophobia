@@ -105,8 +105,17 @@ pingStatus();
 setInterval(pingStatus, 10000);
 
 /* ============================================================
-   STATS — автообновление каждые 5 сек
+   STATS — автообновление каждые 5 сек -> Плавное обновление
    ============================================================ */
+
+/* текущие значения для анимации */
+const current = { cpu: 0, ram: 0, disk: 0 };
+const target  = { cpu: 0, ram: 0, disk: 0 };
+
+/* шум ±2% поверх реального значения */
+function noise() {
+    return (Math.random() - 0.5) * 4;
+}
 
 function makeBar(val) {
     const filled = Math.round(val / 5);
@@ -114,23 +123,53 @@ function makeBar(val) {
     return '█'.repeat(filled) + '░'.repeat(empty) + ' ' + val + '%';
 }
 
+function animateValue(key, toVal, duration = 800) {
+    target[key] = toVal;
+    const fromVal = current[key];
+
+    const start = performance.now();
+
+    function tick(now) {
+        const elapsed  = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease     = 1 - Math.pow(1 - progress, 3);
+
+        const val         = fromVal + (toVal - fromVal) * ease;
+        const displayVal  = Math.min(100, Math.max(0, Math.round(val + (progress === 1 ? noise() : 0))));
+
+        current[key] = val;
+
+        document.getElementById('s-' + key).textContent = displayVal + '%';
+        document.getElementById('b-' + key).textContent = makeBar(displayVal);
+
+        if (progress < 1) {
+            requestAnimationFrame(tick);
+        } else {
+            /* после окончания анимации — продолжаем "дышать" */
+            setTimeout(() => {
+                const breathe = Math.round(target[key] + noise());
+                const clamped = Math.min(100, Math.max(0, breathe));
+                document.getElementById('s-' + key).textContent = clamped + '%';
+                document.getElementById('b-' + key).textContent = makeBar(clamped);
+            }, 800 + Math.random() * 600);
+        }
+    }
+
+    requestAnimationFrame(tick);
+}
+
 async function loadStats() {
     try {
         const data = await fetch('/stats').then(r => r.json());
 
-        document.getElementById('s-cpu').textContent  = data.cpu  + '%';
-        document.getElementById('s-ram').textContent  = data.ram  + '%';
-        document.getElementById('s-disk').textContent = data.disk + '%';
+        animateValue('cpu',  data.cpu);
+        animateValue('ram',  data.ram);
+        animateValue('disk', data.disk);
+
         document.getElementById('s-proc').textContent = data.proc;
         document.getElementById('s-boot').textContent = data.boot_time;
-
-        document.getElementById('b-cpu').textContent  = makeBar(data.cpu);
-        document.getElementById('b-ram').textContent  = makeBar(data.ram);
-        document.getElementById('b-disk').textContent = makeBar(data.disk);
-    } catch { /* offline — dot покажет */ }
+    } catch { /* offline */ }
 }
-
-document.getElementById('btn-refresh-stats').addEventListener('click', loadStats);
 
 loadStats();
 setInterval(loadStats, 5000);
@@ -186,18 +225,47 @@ function renderFiles(files, pwd) {
     }
 
     body.innerHTML = files.map(name => `
-        <div class="file-line">
+        <div class="file-line" id="file-${btoa(name)}">
             <span class="fname">${esc(name)}</span>
-            <a
-                href="/download/${encodeURIComponent(name)}?password=${encodeURIComponent(pwd)}"
-                download="${esc(name)}"
-                style="color:var(--glow-dim); text-decoration:none; letter-spacing:0.1em;
-                       font-family:var(--font-mono); font-size:11px; transition:color 0.15s;"
-                onmouseover="this.style.color='var(--glow)'"
-                onmouseout="this.style.color='var(--glow-dim)'"
-            >[ DL ]</a>
+            <div style="display:flex; gap:12px">
+                
+                    <a href="/download/${encodeURIComponent(name)}?password=${encodeURIComponent(pwd)}"
+                    download="${esc(name)}"
+                    style="color:var(--glow-dim); text-decoration:none; letter-spacing:0.1em; font-size:11px; transition:color 0.15s"
+                    onmouseover="this.style.color='var(--glow)'"
+                    onmouseout="this.style.color='var(--glow-dim)'"
+                >[ DL ]</a>
+                <span
+                    onclick="deleteFile('${esc(name)}', '${esc(pwd)}')"
+                    style="color:var(--text-dim); letter-spacing:0.1em; font-size:11px; cursor:pointer; transition:color 0.15s"
+                    onmouseover="this.style.color='var(--red)'"
+                    onmouseout="this.style.color='var(--text-dim)'"
+                >[ RM ]</span>
+            </div>
         </div>
     `).join('');
+}
+
+/* ============================================================
+   DELETE
+   ============================================================ */
+
+async function deleteFile(filename, pwd) {
+    try {
+        const data = await fetch(
+            '/files/' + encodeURIComponent(filename) + '?password=' + encodeURIComponent(pwd),
+            { method: 'DELETE' }
+        ).then(r => r.json());
+
+        if (data.status === 'deleted') {
+            const row = document.getElementById('file-' + btoa(filename));
+            if (row) row.remove();
+        } else {
+            document.getElementById('files-error').textContent = '// DELETE FAILED';
+        }
+    } catch {
+        document.getElementById('files-error').textContent = '// REQUEST FAILED';
+    }
 }
 
 /* ============================================================

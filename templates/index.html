@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STORAGE PANEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- атмосферные слои -->
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<!-- главный контейнер -->
+<div class="container">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-title">STORAGE PANEL</div>
+        <div class="topbar-status">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-label">CONNECTING...</span>
+        </div>
+    </header>
+
+    <!-- BODY -->
+    <div class="body">
+
+        <!-- SIDEBAR / NAV -->
+        <nav class="sidebar">
+            <div class="nav-item active" data-view="stats">
+                <span class="nav-arrow" id="arr-stats">▶</span>
+                <span class="nav-label">STATS</span>
+            </div>
+            <div class="nav-item" data-view="files">
+                <span class="nav-arrow hidden" id="arr-files">▶</span>
+                <span class="nav-label">FILES</span>
+            </div>
+            <div class="nav-item" data-view="upload">
+                <span class="nav-arrow hidden" id="arr-upload">▶</span>
+                <span class="nav-label">UPLOAD</span>
+            </div>
+            <div class="nav-item" data-view="password">
+                <span class="nav-arrow hidden" id="arr-password">▶</span>
+                <span class="nav-label">PASSWORD</span>
+            </div>
+        </nav>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            <!-- ═══ STATS ═══ -->
+            <div class="view active" id="view-stats">
+                <div class="section-title">system metrics</div>
+
+                <div class="stat-row">
+                    <span class="stat-key">CPU</span>
+                    <span class="stat-val" id="s-cpu">--%</span>
+                    <span class="stat-bar" id="b-cpu"></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-key">RAM</span>
+                    <span class="stat-val" id="s-ram">--%</span>
+                    <span class="stat-bar" id="b-ram"></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-key">DISK C:\</span>
+                    <span class="stat-val" id="s-disk">--%</span>
+                    <span class="stat-bar" id="b-disk"></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-key">PROC</span>
+                    <span class="stat-val" id="s-proc">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-key">BOOT</span>
+                    <span class="stat-val" id="s-boot" style="font-size:14px; font-family:var(--font-mono)">--</span>
+                </div>
+
+                <button class="terminal-btn" id="btn-refresh-stats" style="margin-top:16px">REFRESH</button>
+            </div>
+
+            <!-- ═══ FILES ═══ -->
+            <div class="view" id="view-files">
+                <div class="section-title">file storage</div>
+
+                <div class="terminal-field">
+                    <div class="terminal-label">password</div>
+                    <input type="password" class="terminal-input" id="files-pwd" placeholder="enter password">
+                </div>
+
+                <button class="terminal-btn" id="btn-list-files">LIST FILES</button>
+                <div class="feedback" id="files-feedback"></div>
+
+                <div id="files-result" style="margin-top:20px; display:none">
+                    <div class="section-title">contents</div>
+                    <div id="files-body"></div>
+                </div>
+            </div>
+
+            <!-- ═══ UPLOAD ═══ -->
+            <div class="view" id="view-upload">
+                <div class="section-title">upload file</div>
+
+                <div class="drop-zone" id="drop-zone">
+                    <input type="file" id="file-input">
+                    <span class="drop-zone-icon">⬆</span>
+                    DROP FILE HERE OR CLICK TO SELECT
+                    <div class="drop-zone-name" id="drop-name"></div>
+                </div>
+
+                <div class="terminal-field">
+                    <div class="terminal-label">password</div>
+                    <input type="password" class="terminal-input" id="upload-pwd" placeholder="enter password">
+                </div>
+
+                <div class="btn-row">
+                    <button class="terminal-btn" id="btn-upload">EXECUTE UPLOAD</button>
+                    <button class="terminal-btn" id="btn-goto-files" style="display:none">GO TO FILES</button>
+                </div>
+                <div class="feedback" id="upload-feedback"></div>
+            </div>
+
+            <!-- ═══ PASSWORD ═══ -->
+            <div class="view" id="view-password">
+                <div class="section-title">auth config</div>
+
+                <div class="terminal-field">
+                    <div class="terminal-label">global password</div>
+                    <input type="password" class="terminal-input" id="global-pwd" placeholder="enter password">
+                </div>
+
+                <div class="btn-row">
+                    <button class="terminal-btn" id="btn-save-pwd">SAVE</button>
+                    <button class="terminal-btn" id="btn-clear-pwd">CLEAR</button>
+                </div>
+                <div class="feedback" id="pwd-feedback"></div>
+
+                <div style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--text-dim);
+                    letter-spacing: 0.1em;
+                    margin-top: 20px;
+                    line-height: 2;
+                ">
+                    // stored in sessionStorage<br>
+                    // cleared when tab is closed
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div><!-- /body -->
+</div><!-- /container -->
+
+<script src="/static/js/main.js" defer></script>
+</body>
+</html>

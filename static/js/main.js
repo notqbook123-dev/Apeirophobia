@@ -186,7 +186,7 @@ document.getElementById('btn-list-files').addEventListener('click', async () => 
     }
 
     try {
-        const data = await fetch('/files?password=' + encodeURIComponent(pwd)).then(r => r.json());
+        const data = await fetch('/files', { headers: { 'x-password': pwd } }).then(r => r.json());
 
         if (!Array.isArray(data.files)) {
             setFeedback('files-feedback', 'ACCESS DENIED', 'err');
@@ -229,12 +229,12 @@ function renderFiles(files, pwd) {
             <span class="fname">${esc(name)}</span>
             <div style="display:flex; gap:12px">
                 
-                    <a href="/download/${encodeURIComponent(name)}?password=${encodeURIComponent(pwd)}"
-                    download="${esc(name)}"
-                    style="color:var(--glow-dim); text-decoration:none; letter-spacing:0.1em; font-size:11px; transition:color 0.15s"
+                <span
+                    onclick="downloadFile('${esc(name)}', '${esc(pwd)}')"
+                    style="color:var(--glow-dim); letter-spacing:0.1em; font-size:11px; cursor:pointer; transition:color 0.15s"
                     onmouseover="this.style.color='var(--glow)'"
                     onmouseout="this.style.color='var(--glow-dim)'"
-                >[ DL ]</a>
+                >[ DL ]</span>
                 <span
                     onclick="deleteFile('${esc(name)}', '${esc(pwd)}')"
                     style="color:var(--text-dim); letter-spacing:0.1em; font-size:11px; cursor:pointer; transition:color 0.15s"
@@ -247,14 +247,17 @@ function renderFiles(files, pwd) {
 }
 
 /* ============================================================
-   DELETE
+   DELETE FILE
    ============================================================ */
 
 async function deleteFile(filename, pwd) {
     try {
         const data = await fetch(
-            '/files/' + encodeURIComponent(filename) + '?password=' + encodeURIComponent(pwd),
-            { method: 'DELETE' }
+            '/files/' + encodeURIComponent(filename),
+            {
+                method: 'DELETE',
+                headers: { 'x-password': pwd }
+            }
         ).then(r => r.json());
 
         if (data.status === 'deleted') {
@@ -269,7 +272,24 @@ async function deleteFile(filename, pwd) {
 }
 
 /* ============================================================
-   UPLOAD
+   DOWNLOAD FILE
+   ============================================================ */
+
+async function downloadFile(filename, pwd) {
+    const r    = await fetch('/download/' + encodeURIComponent(filename), {
+        headers: { 'x-password': pwd }
+    });
+    const blob = await r.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   UPLOAD FILE
    ============================================================ */
 
 const fileInput = document.getElementById('file-input');
@@ -320,10 +340,11 @@ document.getElementById('btn-upload').addEventListener('click', async () => {
     form.append('file', file);
 
     try {
-        const data = await fetch('/upload?password=' + encodeURIComponent(pwd), {
+        const data = await fetch('/upload', {
             method: 'POST',
+            headers: { 'x-password': pwd },
             body: form
-        }).then(r => r.json());
+                }).then(r => r.json());
 
         if (data.status === 'success') {
             setFeedback('upload-feedback', 'UPLOADED: ' + data.filename, 'ok');

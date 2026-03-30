@@ -1,10 +1,11 @@
-from fastapi import APIRouter, File, UploadFile, Request
+from fastapi import APIRouter, File, UploadFile, Request, Depends, Header, HTTPException 
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 import psutil
 from datetime import datetime
 import os
 import shutil
+import secrets
 
 router = APIRouter()
 
@@ -12,6 +13,11 @@ templates = Jinja2Templates(directory="templates")
 
 STORAGE_PATH = os.getenv("STORAGE_PATH", "./storage")
 SECRET_PASSWORD = os.getenv("SECRET_PASSWORD", "")
+
+def check_auth(x_password: str = Header(None)):
+    if not x_password or not secrets.compare_digest(x_password, SECRET_PASSWORD):
+        raise HTTPException (status_code=401, detail="unauthorized")
+
 
 if not os.path.exists(STORAGE_PATH):
     os.makedirs(STORAGE_PATH)
@@ -23,16 +29,12 @@ async def get_index(request: Request):
 
 
 @router.get("/files")
-def list_files(password: str = None):
-    if password != SECRET_PASSWORD:
-        return {"error": "unauthorized"}
+def list_files(auth: None = Depends(check_auth)):
     return {"files": os.listdir(STORAGE_PATH)}
 
 
 @router.get("/download/{filename}")
-def download_file(filename: str, password: str = None):
-    if password != SECRET_PASSWORD:
-        return {"error": "unauthorized"}
+def download_file(filename: str, auth: None = Depends(check_auth)):
     file_path = os.path.join(STORAGE_PATH, filename)
     if os.path.exists(file_path):
         return FileResponse(file_path)
@@ -51,9 +53,7 @@ def get_stats():
 
 
 @router.post("/upload")
-async def upload_file(password: str, file: UploadFile = File(...)):
-    if password != SECRET_PASSWORD:
-        return {"error": "unauthorized"}
+async def upload_file(file: UploadFile = File(...), auth: None = Depends(check_auth)):
     file_path = os.path.join(STORAGE_PATH, file.filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -61,14 +61,9 @@ async def upload_file(password: str, file: UploadFile = File(...)):
 
 
 @router.delete("/files/{filename}")
-def delete_file(filename: str, password: str = None):
-    if password != SECRET_PASSWORD:
-        return {"error": "unauthorized"}
-    
+def delete_file(filename: str, auth: None = Depends(check_auth)):
     file_path = os.path.join(STORAGE_PATH, filename)
-
     if not os.path.exists(file_path):
         return {"error": "file not found"}
-    
     os.remove(file_path)
     return {"status": "deleted", "filename": filename}

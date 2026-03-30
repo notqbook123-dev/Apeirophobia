@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 import shutil
 import secrets
+import pathlib
 
 router = APIRouter()
 
@@ -53,11 +54,18 @@ def get_stats():
 
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...), auth: None = Depends(check_auth)):
-    file_path = os.path.join(STORAGE_PATH, file.filename)
+async def upload_file(file: UploadFile = File(...), auth: None = Depends(check_auth)): # <-- помоему решили проблему с загрузкой вредоносного файла
+    # берём только имя файла, без пути
+    safe_name = pathlib.Path(file.filename).name
+
+    # если имя пустое или это скрытый файл
+    if not safe_name or safe_name.startswith('.'):
+        raise HTTPException(status_code=400, detail="invalid filename")
+
+    file_path = os.path.join(STORAGE_PATH, safe_name)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    return {"status": "success", "filename": file.filename}
+    return {"status": "success", "filename": safe_name}
 
 
 @router.delete("/files/{filename}")

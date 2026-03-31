@@ -7,6 +7,7 @@ import os
 import shutil
 import secrets
 import pathlib
+from app.limiter import limiter
 
 router = APIRouter()
 
@@ -30,12 +31,19 @@ async def get_index(request: Request):
 
 
 @router.get("/files")
-def list_files(auth: None = Depends(check_auth)):
+@limiter.limit("10/minute")
+def list_files(request: Request, x_password: str = Header(None)):
+    if not x_password or not secrets.compare_digest(x_password, SECRET_PASSWORD):
+        raise HTTPException(status_code=401, detail="unauthorized")
     return {"files": os.listdir(STORAGE_PATH)}
 
 
+
 @router.get("/download/{filename}")
-def download_file(filename: str, auth: None = Depends(check_auth)):
+@limiter.limit("10/minute")
+def download_file(request: Request, filename: str, x_password: str = Header(None)):
+    if not x_password or not secrets.compare_digest(x_password, SECRET_PASSWORD):
+        raise HTTPException(status_code=401, detail="unauthorized")
     file_path = os.path.join(STORAGE_PATH, filename)
     if os.path.exists(file_path):
         return FileResponse(file_path)
@@ -54,7 +62,12 @@ def get_stats():
 
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...), auth: None = Depends(check_auth)): # <-- помоему решили проблему с загрузкой вредоносного файла
+@limiter.limit("10/minute")
+async def upload_file(request: Request, file: UploadFile = File(...), auth: None = Depends(check_auth)): # <-- помоему решили проблему с загрузкой вредоносного файла в корень проекта
+
+    if not x_password or not secrets.compare_digest(x_password, SECRET_PASSWORD):
+        return HTTPException(status_code=401, detail="unauthorized")
+
     # берём только имя файла, без пути
     safe_name = pathlib.Path(file.filename).name
 
@@ -69,9 +82,12 @@ async def upload_file(file: UploadFile = File(...), auth: None = Depends(check_a
 
 
 @router.delete("/files/{filename}")
-def delete_file(filename: str, auth: None = Depends(check_auth)):
+@limiter.limit("10/minute")
+def delete_file(request: Request, filename: str, x_password: str = Header(None)):
+    if not x_password or not secrets.compare_digest(x_password, SECRET_PASSWORD):
+        raise HTTPException(status_code=401, detail="unauthorized")
     file_path = os.path.join(STORAGE_PATH, filename)
     if not os.path.exists(file_path):
         return {"error": "file not found"}
     os.remove(file_path)
-    return {"status": "deleted", "filename": filename}
+    return {"status": "deleted", "filename": filename}  

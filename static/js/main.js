@@ -372,3 +372,27 @@ document.getElementById('btn-goto-files').addEventListener('click', () => {
     switchView('files');
     document.getElementById('btn-list-files').click();
 });
+
+/* ============================================================
+   KEYBOARD NAVIGATION
+   ============================================================ */
+
+const navViews = ['stats', 'files', 'upload', 'password'];
+
+document.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+
+    /* не перехватываем стрелки когда фокус в инпуте */
+    if (document.activeElement.tagName === 'INPUT') return;
+
+    e.preventDefault();
+
+    const current = document.querySelector('.nav-item.active').dataset.view;
+    const idx     = navViews.indexOf(current);
+
+    let next;
+    if (e.key === 'ArrowDown') next = navViews[(idx + 1) % navViews.length];
+    if (e.key === 'ArrowUp')   next = navViews[(idx - 1 + navViews.length) % navViews.length];
+
+    switchView(next);
+});

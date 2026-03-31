@@ -217,6 +217,10 @@ body::after {
     text-shadow: 0 0 10px rgba(200, 196, 122, 0.4);
 }
 
+.nav-item.active {
+    background: rgba(200, 196, 122, 0.04); /* <---- тут засветление вместе со стрелочками */
+}
+
 /* ── CONTENT AREA ── */
 .content {
     padding: 24px 28px;
@@ -476,4 +480,51 @@ body::after {
 
 .glitch-anim {
     animation: glitch 0.15s steps(1) forwards;
+}
+
+/* ══════════════════════════════════════════
+   BOOT SCREEN
+   ══════════════════════════════════════════ */
+
+#boot-screen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+    letter-spacing: 0.1em;
+}
+
+#boot-text {
+    line-height: 2;
+}
+
+#boot-cursor {
+    color: var(--glow);
+    animation: cursor-blink 0.8s step-end infinite;
+}
+
+.boot-line {
+    display: block;
+    opacity: 0;
+    animation: fadeIn 0.1s forwards;
+}
+
+.boot-line.ok .boot-status {
+    color: var(--green);
+}
+
+.boot-line.granted {
+    color: var(--glow);
+    text-shadow:
+        0 0 10px rgba(200, 196, 122, 0.8),
+        0 0 30px rgba(200, 196, 122, 0.4);
+    font-size: 20px;
+    margin-top: 12px;
 }

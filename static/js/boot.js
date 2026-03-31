@@ -3,68 +3,57 @@
    ============================================================ */
 
 const bootLines = [
-    { text: 'STORAGE PANEL v0.1',                   delay: 0,    status: null      },
-    { text: '',                                       delay: 400,  status: null      },
-    { text: 'INITIALIZING FILE SYSTEM....',          delay: 600,  status: 'OK'      },
-    { text: 'LOADING MODULES...',                    delay: 1000, status: 'OK'      },
-    { text: 'CHECKING STORAGE PATH...',              delay: 1400, status: 'OK'      },
-    { text: 'ESTABLISHING CONNECTION...',            delay: 1800, status: 'OK'      },
-    { text: '',                                       delay: 2200, status: null      },
-    { text: 'ACCESS GRANTED',                        delay: 2600, status: null, granted: true },
+    { text: 'STORAGE PANEL v0.1',                    delay: 0    },
+    { text: '',                                        delay: 150  },
+    { text: 'INITIALIZING FILE SYSTEM...',            delay: 250,  ok: true },
+    { text: 'MOUNTING /dev/sda1...',                  delay: 400,  ok: true },
+    { text: 'LOADING MODULES...',                     delay: 550,  ok: true },
+    { text: 'CHECKING STORAGE PATH...',               delay: 700,  ok: true },
+    { text: 'VERIFYING INTEGRITY...',                 delay: 850,  ok: true },
+    { text: 'STARTING AUTH MODULE...',                delay: 1000, ok: true },
+    { text: 'ESTABLISHING CONNECTION...',             delay: 1150, ok: true },
+    { text: 'BINDING TO 0.0.0.0:8000...',             delay: 1300, ok: true },
+    { text: 'RATE LIMITER INITIALIZED...',            delay: 1450, ok: true },
+    { text: 'STORAGE DAEMON STARTED...',              delay: 1600, ok: true },
+    { text: '',                                        delay: 1750  },
+    { text: '',                                        delay: 1900, prompt: true },
 ];
 
-function padLine(text, status) {
-    if (!status) return text;
-    const dots = '.'.repeat(Math.max(0, 42 - text.length));
-    return `${text}${dots} [${status}]`;
-}
-
 function runBoot() {
-    const container = document.getElementById('boot-text');
-    const cursor    = document.getElementById('boot-cursor');
-    const panel = document.querySelector('.container');
+    const container   = document.getElementById('boot-text');
+    const bootCursor  = document.getElementById('boot-cursor');
+    const panel       = document.querySelector('.container');
 
-    /* прячем панель до конца загрузки */
     panel.style.opacity = '0';
 
-    bootLines.forEach(({ text, delay, status, granted }) => {
-        setTimeout(() => {
-            const span = document.createElement('span');
-            span.className = 'boot-line' + (granted ? ' granted' : '') + (status ? ' ok' : '');
-
-            if (granted) {
-                span.textContent = text;
-            } else {
-                span.innerHTML = padLine(text, status)
-                    .replace(/\[OK\]/g, '<span class="boot-status">[OK]</span>');
-            }
-
-            container.appendChild(span);
-        }, delay);
-    });
-
-    /* glitch в середине */
+bootLines.forEach(({ text, delay, ok, prompt }) => {
     setTimeout(() => {
-        const glitch = document.createElement('span');
-        glitch.className = 'boot-line';
-        glitch.style.color = 'var(--text-dim)';
-        glitch.textContent = 'X7#@!..CORRUPTED..##@X....';
-        container.appendChild(glitch);
+        const span = document.createElement('span');
+        span.className = 'boot-line';
 
-        setTimeout(() => glitch.remove(), 120);
-    }, 1600);
+        if (prompt) {
+            span.innerHTML = '> press enter <span style="color:var(--glow); animation:cursor-blink 0.8s step-end infinite">_</span>';
+        } else if (ok) {
+            const dots  = '.'.repeat(Math.max(0, 40 - text.length));
+            span.innerHTML = `${text}<span style="color:var(--text-dim)">${dots}</span> <span style="color:var(--green)">[OK]</span>`;
+        } else {
+            span.textContent = text;
+        }
 
-    /* конец загрузки — убираем boot screen, показываем панель */
-    const totalDelay = 2600 + 800;
+        container.appendChild(span);
+    }, delay);
+});
+
+    const totalDelay = 1900 + 1200;
 
     setTimeout(() => {
-        cursor.style.display = 'none';
+        bootCursor.style.transition = 'opacity 0.3s ease';
+        bootCursor.style.opacity    = '0';
 
         const bootScreen = document.getElementById('boot-screen');
         bootScreen.style.transition = 'opacity 0.8s ease';
         bootScreen.style.opacity    = '0';
 
-        /* плавное появление панели */
         panel.style.transition = 'opacity 1.2s ease';
         panel.style.opacity    = '1';
 

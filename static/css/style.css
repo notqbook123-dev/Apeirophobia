@@ -19,6 +19,7 @@
     --red-hi:    #c04040;
     --green:     #4a6a3a;
     --green-hi:  #6a9a5a;
+    --yellow:    #c8a84a;
     --font-main: 'VT323', monospace;
     --font-mono: 'Share Tech Mono', monospace;
 
@@ -508,6 +509,7 @@ body::after {
 #boot-cursor {
     color: var(--glow);
     animation: cursor-blink 0.8s step-end infinite;
+    position: absolute;
 }
 
 .boot-line {
@@ -527,4 +529,8 @@ body::after {
         0 0 30px rgba(200, 196, 122, 0.4);
     font-size: 20px;
     margin-top: 12px;
+}
+
+.boot-line.warn {
+    color: var(--yellow);
 }

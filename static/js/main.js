@@ -377,6 +377,22 @@ document.getElementById('btn-goto-files').addEventListener('click', () => {
    KEYBOARD NAVIGATION
    ============================================================ */
 
+   function skipBoot() {
+    const bootScreen = document.getElementById('boot-screen');
+    const panel      = document.querySelector('.container');
+
+    bootScreen.style.transition = 'opacity 0.4s ease';
+    bootScreen.style.opacity    = '0';
+    panel.style.transition      = 'opacity 0.6s ease';
+    panel.style.opacity         = '1';
+
+    setTimeout(() => bootScreen.remove(), 400);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') skipBoot();
+});
+
 const navViews = ['stats', 'files', 'upload', 'password'];
 
 document.addEventListener('keydown', e => {

@@ -37,7 +37,7 @@ function switchView(name) {
    ============================================================ */
 
 function getSavedPwd() {
-    return sessionStorage.getItem('fs_pwd') || '';
+    return localStorage.getItem('fs_pwd') || '';
 }
 
 function fillPwdFields() {
@@ -51,13 +51,13 @@ function fillPwdFields() {
 }
 
 document.getElementById('btn-save-pwd').addEventListener('click', () => {
-    sessionStorage.setItem('fs_pwd', document.getElementById('global-pwd').value);
+    localStorage.setItem('fs_pwd', document.getElementById('global-pwd').value);
     setFeedback('pwd-feedback', 'PASSWORD SAVED', 'ok');
     fillPwdFields();
 });
 
 document.getElementById('btn-clear-pwd').addEventListener('click', () => {
-    sessionStorage.removeItem('fs_pwd');
+    localStorage.removeItem('fs_pwd');
     document.getElementById('global-pwd').value = '';
     setFeedback('pwd-feedback', 'CLEARED', 'ok');
 });
@@ -210,6 +210,12 @@ function esc(s) {
         .replace(/"/g, '&quot;');
 }
 
+function formatSize(bytes) {
+    if (bytes < 1024)        return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
 function renderFiles(files, pwd) {
     const body = document.getElementById('files-body');
 
@@ -224,11 +230,15 @@ function renderFiles(files, pwd) {
         return;
     }
 
-    body.innerHTML = files.map(name => `
+    body.innerHTML = files.map(({ name, size, modified }) => `
         <div class="file-line" id="file-${btoa(name)}">
-            <span class="fname">${esc(name)}</span>
-            <div style="display:flex; gap:12px">
-                
+            <div style="display:flex; flex-direction:column; gap:2px; flex:1">
+                <span class="fname">${esc(name)}</span>
+                <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-dim); letter-spacing:0.1em">
+                    ${formatSize(size)} &nbsp;/&nbsp; ${modified}
+                </span>
+            </div>
+            <div style="display:flex; gap:12px; align-items:center">
                 <span
                     onclick="downloadFile('${esc(name)}', '${esc(pwd)}')"
                     style="color:var(--glow-dim); letter-spacing:0.1em; font-size:11px; cursor:pointer; transition:color 0.15s"
@@ -412,3 +422,17 @@ document.addEventListener('keydown', e => {
 
     switchView(next);
 });
+
+/* ============================================================
+   COMPONENTS — progress bar
+   ============================================================ */
+
+function renderProgressBar(val, label = '') {
+    const filled  = Math.round(val / 5);
+    const empty   = 20 - filled;
+    return `<span class="progress-wrap">
+        ${label ? `<span class="progress-label">${label}</span>` : ''}
+        <span class="progress-bar">${'█'.repeat(filled)}</span><span class="progress-empty">${'░'.repeat(empty)}</span>
+        <span class="progress-percent">${val}%</span>
+    </span>`;
+}

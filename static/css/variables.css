@@ -1,0 +1,29 @@
+/* ── VARIABLES ── */
+:root {
+    --bg:        #0a0a08;
+    --surface:   #0d0d0b;
+    --glow:      #c8c47a;
+    --glow-dim:  #6b6840;
+    --glow-dark: #2a2818;
+    --text:      #a8a47a;
+    --text-dim:  #4a4830;
+    --text-hi:   #e8e4aa;
+    --red:       #8a3030;
+    --red-hi:    #c04040;
+    --green:     #4a6a3a;
+    --green-hi:  #6a9a5a;
+    --yellow:    #c8a84a;
+    --font-main: 'VT323', monospace;
+    --font-mono: 'Share Tech Mono', monospace;
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       ФОН — НАСТРОЙ ПОД СЕБЯ
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       Вставь путь к картинке:
+       --bg-image: url('/static/img/bg.jpg');
+       Затемнение от 0.0 (светло) до 1.0 (черно):
+       --bg-overlay: 0.82;
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    --bg-image:   none;
+    --bg-overlay: 0.82;
+}

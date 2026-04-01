@@ -35,7 +35,20 @@ async def get_index(request: Request):
 def list_files(request: Request, x_password: str = Header(None)):
     if not x_password or not secrets.compare_digest(x_password, SECRET_PASSWORD):
         raise HTTPException(status_code=401, detail="unauthorized")
-    return {"files": os.listdir(STORAGE_PATH)}
+
+        print("NEW CODE RUNNING")
+
+    files = []
+    for name in os.listdir(STORAGE_PATH):
+        file_path = os.path.join(STORAGE_PATH, name)
+        stat      = os.stat(file_path)
+        files.append({
+            "name": name,
+            "size": stat.st_size,
+            "modified": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
+        })
+
+    return {"files": files}
 
 
 
@@ -90,4 +103,4 @@ def delete_file(request: Request, filename: str, x_password: str = Header(None))
     if not os.path.exists(file_path):
         return {"error": "file not found"}
     os.remove(file_path)
-    return {"status": "deleted", "filename": filename}  
+    return {"status": "deleted", "filename": filename}

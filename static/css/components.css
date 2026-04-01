@@ -1,0 +1,31 @@
+/* ══════════════════════════════════════════
+   COMPONENTS — переиспользуемые компоненты
+   ══════════════════════════════════════════ */
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--glow-dim);
+    letter-spacing: -0.04em;
+}
+
+.progress-wrap .progress-label {
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-right: 8px;
+}
+
+.progress-wrap .progress-bar {
+    color: var(--glow);
+}
+
+.progress-wrap .progress-empty {
+    color: var(--glow-dark);
+}
+
+.progress-wrap .progress-percent {
+    color: var(--text);
+    margin-left: 8px;
+    letter-spacing: 0.05em;
+}

@@ -9,14 +9,7 @@ const bootLines = [
     { text: 'MOUNTING /dev/sda1...',                  delay: 400,  ok: true },
     { text: 'LOADING MODULES...',                     delay: 550,  ok: true },
     { text: 'CHECKING STORAGE PATH...',               delay: 700,  ok: true },
-    { text: 'VERIFYING INTEGRITY...',                 delay: 850,  ok: true },
-    { text: 'STARTING AUTH MODULE...',                delay: 1000, ok: true },
-    { text: 'ESTABLISHING CONNECTION...',             delay: 1150, ok: true },
-    { text: 'BINDING TO 0.0.0.0:8000...',             delay: 1300, ok: true },
-    { text: 'RATE LIMITER INITIALIZED...',            delay: 1450, ok: true },
-    { text: 'STORAGE DAEMON STARTED...',              delay: 1600, ok: true },
-    { text: '',                                        delay: 1750  },
-    { text: '',                                        delay: 1900, prompt: true },
+    { text: '',                                        delay: 1200, prompt: true },
 ];
 
 function runBoot() {
@@ -34,7 +27,7 @@ bootLines.forEach(({ text, delay, ok, prompt }) => {
         if (prompt) {
             span.innerHTML = '> press enter <span style="color:var(--glow); animation:cursor-blink 0.8s step-end infinite">_</span>';
         } else if (ok) {
-            const dots  = '.'.repeat(Math.max(0, 40 - text.length));
+            const dots  = '.'.repeat(Math.max(0, 35 - text.length));
             span.innerHTML = `${text}<span style="color:var(--text-dim)">${dots}</span> <span style="color:var(--green)">[OK]</span>`;
         } else {
             span.textContent = text;
@@ -44,7 +37,7 @@ bootLines.forEach(({ text, delay, ok, prompt }) => {
     }, delay);
 });
 
-    const totalDelay = 1900 + 1200;
+    const totalDelay = 800 + 400;
 
     setTimeout(() => {
         bootCursor.style.transition = 'opacity 0.3s ease';
